@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Free Poker Game</title>
+    <title>Texas Hold'em Poker</title>
     <style>
         body {
             background-color: #2E7D32;
@@ -41,6 +41,7 @@
             justify-content: center;
             border-radius: 5px;
             border: 2px solid black;
+            font-weight: bold;
         }
         .button {
             padding: 10px 20px;
@@ -55,49 +56,82 @@
         .button:hover {
             background-color: darkgoldenrod;
         }
+        .balance, .pot {
+            font-size: 18px;
+            margin-top: 10px;
+        }
     </style>
 </head>
 <body>
 
-    <h1>Welcome to Free Poker</h1>
-    <p>Click "Deal" to get a random hand of 5 cards</p>
-
+    <h1>Texas Hold'em Poker</h1>
+    <p>Your balance: $<span id="balance">1000</span></p>
+    <p>Small Blind: $10 | Big Blind: $20</p>
+    
     <div class="table">
-        <h2>Poker Table</h2>
-        <div class="cards" id="cardContainer"></div>
-        <button class="button" onclick="dealCards()">Deal</button>
+        <h2>Dealer's Hand</h2>
+        <div class="cards" id="dealerCards"></div>
+        
+        <h2>Your Hand</h2>
+        <div class="cards" id="playerCards"></div>
+
+        <h2>Community Cards</h2>
+        <div class="cards" id="communityCards"></div>
+        
+        <div class="pot">Pot: $<span id="pot">0</span></div>
+        
+        <button class="button" onclick="dealGame()">Deal Game</button>
+        <button class="button" onclick="bet(50)">Bet $50</button>
+        <button class="button" onclick="bet(100)">Bet $100</button>
+        <button class="button" onclick="raiseBet(200)">Raise $200</button>
+        <button class="button" onclick="fold()">Fold</button>
     </div>
 
     <script>
+        let balance = 1000;
+        let deck = [];
+        let playerHand = [];
+        let dealerHand = [];
+        let communityCards = [];
+        let pot = 0;
+        let round = "preflop"; // Track the current round
+
+        // Define suits and card values
         const suits = ['♠', '♥', '♦', '♣'];
         const values = ['2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A'];
-        
+
+        // Create the deck of cards
         function createDeck() {
-            let deck = [];
+            deck = [];
             for (let suit of suits) {
                 for (let value of values) {
                     deck.push(value + suit);
                 }
             }
-            return deck;
         }
 
-        function shuffleDeck(deck) {
+        // Shuffle the deck
+        function shuffleDeck() {
             for (let i = deck.length - 1; i > 0; i--) {
                 let j = Math.floor(Math.random() * (i + 1));
                 [deck[i], deck[j]] = [deck[j], deck[i]];
             }
         }
 
-        function dealCards() {
-            let deck = createDeck();
-            shuffleDeck(deck);
-            let hand = deck.slice(0, 5);
-            displayCards(hand);
+        // Deal the cards to the player and dealer
+        function dealHands() {
+            playerHand = [deck.pop(), deck.pop()];
+            dealerHand = [deck.pop(), deck.pop()];
+            communityCards = [];
+
+            // Show player and dealer hands
+            displayCards(playerHand, "playerCards");
+            displayCards([dealerHand[0], "??"], "dealerCards"); // Hide one of dealer's cards
         }
 
-        function displayCards(hand) {
-            const container = document.getElementById("cardContainer");
+        // Display cards
+        function displayCards(hand, containerId) {
+            const container = document.getElementById(containerId);
             container.innerHTML = "";
             hand.forEach(card => {
                 let cardElement = document.createElement("div");
@@ -106,6 +140,111 @@
                 container.appendChild(cardElement);
             });
         }
+
+        // Deal community cards (flop, turn, river)
+        function dealCommunityCards() {
+            // Flop (3 cards)
+            communityCards.push(deck.pop(), deck.pop(), deck.pop());
+            displayCards(communityCards, "communityCards");
+
+            // Turn (1 card)
+            setTimeout(() => {
+                communityCards.push(deck.pop());
+                displayCards(communityCards, "communityCards");
+            }, 1500);
+
+            // River (1 card)
+            setTimeout(() => {
+                communityCards.push(deck.pop());
+                displayCards(communityCards, "communityCards");
+            }, 3000);
+        }
+
+        // Update balance after betting
+        function bet(amount) {
+            if (balance >= amount) {
+                balance -= amount;
+                pot += amount;
+                document.getElementById("balance").textContent = balance;
+                document.getElementById("pot").textContent = pot;
+                console.log(`You bet $${amount}. Pot: $${pot}`);
+                nextBettingRound();
+            } else {
+                alert("Not enough money to bet.");
+            }
+        }
+
+        // Raise bet amount
+        function raiseBet(amount) {
+            bet(amount);
+        }
+
+        // Fold (end the game for the player)
+        function fold() {
+            alert("You folded. Game over.");
+            resetGame();
+        }
+
+        // Show both dealer's cards
+        function showDealerCards() {
+            displayCards(dealerHand, "dealerCards");
+        }
+
+        // Deal the game (initialize everything)
+        function dealGame() {
+            createDeck();
+            shuffleDeck();
+            dealHands();
+            pot = 10 + 20; // Small Blind + Big Blind
+            document.getElementById("pot").textContent = pot;
+            round = "preflop";
+            // Small Blind and Big Blind
+            balance -= 10; // Small blind
+            balance -= 20; // Big blind
+            document.getElementById("balance").textContent = balance;
+            console.log(`Blinds placed. Pot: $${pot}`);
+            setTimeout(dealCommunityCards, 1000); // Deal the community cards after a short delay
+        }
+
+        // Handle the betting round logic
+        function nextBettingRound() {
+            if (round === "preflop") {
+                round = "flop";
+                setTimeout(dealCommunityCards, 1000);
+            } else if (round === "flop") {
+                round = "turn";
+            } else if (round === "turn") {
+                round = "river";
+            } else if (round === "river") {
+                setTimeout(showDealerCards, 1000);
+                setTimeout(declareWinner, 2000); // End game and declare the winner
+            }
+        }
+
+        // Declare the winner (simplified, you can add poker hand comparison logic here)
+        function declareWinner() {
+            // Here, we will randomly determine the winner for simplicity
+            const winner = Math.random() > 0.5 ? "player" : "dealer";
+            alert(`${winner.charAt(0).toUpperCase() + winner.slice(1)} wins!`);
+            if (winner === "player") {
+                balance += pot;
+            }
+            resetGame();
+        }
+
+        // Reset the game (for simplicity, not implemented fully here)
+        function resetGame() {
+            playerHand = [];
+            dealerHand = [];
+            communityCards = [];
+            pot = 0;
+            round = "preflop";
+            document.getElementById("pot").textContent = pot;
+        }
+
+        // Initial setup
+        dealGame();
+
     </script>
 
 </body>
