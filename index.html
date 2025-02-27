@@ -50,6 +50,22 @@
         #flop, #turn, #river {
             margin: 0 10px;
         }
+
+        .card {
+            width: 50px;
+            height: 70px;
+            margin: 0 5px;
+        }
+
+        #dealer-cards img {
+            width: 50px;
+            height: 70px;
+        }
+
+        #player-cards img {
+            width: 50px;
+            height: 70px;
+        }
     </style>
 </head>
 <body>
@@ -61,7 +77,10 @@
         </div>
         <div id="dealer-hand">
             <h2>Dealer's Hand:</h2>
-            <div id="dealer-cards"></div>
+            <div id="dealer-cards">
+                <img src="back-of-card.png" alt="Card" class="card"> <!-- Back of the card -->
+                <img src="back-of-card.png" alt="Card" class="card"> <!-- Back of the card -->
+            </div>
         </div>
         <div id="community-cards">
             <h2>Community Cards:</h2>
@@ -132,22 +151,24 @@
 
             // Deal the community cards (flop, turn, river)
             communityCards = [deck.pop(), deck.pop(), deck.pop()]; // Flop
-            flop.innerHTML = communityCards.map(card => `${card.rank} of ${card.suit}`).join(', ');
-
-            communityCards.push(deck.pop()); // Turn
-            turn.innerHTML = communityCards[3].rank + " of " + communityCards[3].suit;
-
-            communityCards.push(deck.pop()); // River
-            river.innerHTML = communityCards[4].rank + " of " + communityCards[4].suit;
+            flop.innerHTML = communityCards.map(card => createCardImage(card)).join('');
 
             renderHands();
             renderControls();
         }
 
-        // Function to render hands
+        // Function to create card image elements
+        function createCardImage(card) {
+            return `<img src="images/${card.rank}_of_${card.suit}.png" class="card" alt="${card.rank} of ${card.suit}">`;
+        }
+
+        // Function to render hands (player's cards only)
         function renderHands() {
-            playerCards.innerHTML = playerHand.map(card => `${card.rank} of ${card.suit}`).join(', ');
-            dealerCards.innerHTML = dealerHand.map(card => `${card.rank} of ${card.suit}`).join(', ');
+            playerCards.innerHTML = playerHand.map(card => createCardImage(card)).join('');
+            dealerCards.innerHTML = `
+                <img src="back-of-card.png" alt="Card" class="card">
+                <img src="back-of-card.png" alt="Card" class="card">
+            `;
         }
 
         // Function to handle bet actions
@@ -171,6 +192,26 @@
             currentBetSpan.textContent = currentBet;
         }
 
+        // Function to reveal the turn card
+        function revealTurnCard() {
+            const turnCard = deck.pop();
+            communityCards.push(turnCard);
+            turn.innerHTML = createCardImage(turnCard);
+        }
+
+        // Function to reveal the river card
+        function revealRiverCard() {
+            const riverCard = deck.pop();
+            communityCards.push(riverCard);
+            river.innerHTML = createCardImage(riverCard);
+        }
+
+        // Function to declare the winner
+        function declareWinner() {
+            // Placeholder logic for now
+            alert("Winner declared! This would be based on the best hand.");
+        }
+
         // Event Listeners
         callBtn.addEventListener('click', () => handleBetAction('call'));
         raiseBtn.addEventListener('click', () => handleBetAction('raise'));
@@ -185,14 +226,17 @@
             dealCards();
         });
 
-        // Initialize game
+        // Start the game
         dealCards();
+
+        // After betting, deal turn card
+        setTimeout(revealTurnCard, 5000); // Wait 5 seconds after deal to show turn
+
+        // After betting, deal river card
+        setTimeout(revealRiverCard, 10000); // Wait another 5 seconds for the river
+
+        // Declare winner after all cards are dealt
+        setTimeout(declareWinner, 15000); // Wait after river to declare winner
     </script>
-</body>
-</html>
-
-
-    </script>
-
 </body>
 </html>
