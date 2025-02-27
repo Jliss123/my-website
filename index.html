@@ -60,20 +60,53 @@
 <body>
 
     <h1>Welcome to Free Poker</h1>
-    <p>A simple poker experience</p>
+    <p>Click "Deal" to get a random hand of 5 cards</p>
 
     <div class="table">
         <h2>Poker Table</h2>
-        <div class="cards">
-            <div class="card">A♠</div>
-            <div class="card">K♠</div>
-            <div class="card">Q♠</div>
-            <div class="card">J♠</div>
-            <div class="card">10♠</div>
-        </div>
-        <button class="button">Deal</button>
-        <button class="button">Fold</button>
+        <div class="cards" id="cardContainer"></div>
+        <button class="button" onclick="dealCards()">Deal</button>
     </div>
+
+    <script>
+        const suits = ['♠', '♥', '♦', '♣'];
+        const values = ['2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A'];
+        
+        function createDeck() {
+            let deck = [];
+            for (let suit of suits) {
+                for (let value of values) {
+                    deck.push(value + suit);
+                }
+            }
+            return deck;
+        }
+
+        function shuffleDeck(deck) {
+            for (let i = deck.length - 1; i > 0; i--) {
+                let j = Math.floor(Math.random() * (i + 1));
+                [deck[i], deck[j]] = [deck[j], deck[i]];
+            }
+        }
+
+        function dealCards() {
+            let deck = createDeck();
+            shuffleDeck(deck);
+            let hand = deck.slice(0, 5);
+            displayCards(hand);
+        }
+
+        function displayCards(hand) {
+            const container = document.getElementById("cardContainer");
+            container.innerHTML = "";
+            hand.forEach(card => {
+                let cardElement = document.createElement("div");
+                cardElement.className = "card";
+                cardElement.textContent = card;
+                container.appendChild(cardElement);
+            });
+        }
+    </script>
 
 </body>
 </html>
