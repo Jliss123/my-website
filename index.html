@@ -3,42 +3,77 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>John's Website</title>
+    <title>Free Poker Game</title>
     <style>
         body {
-            background-color: white;
-            color: #333;
+            background-color: #2E7D32;
+            color: white;
             font-family: Arial, sans-serif;
+            text-align: center;
             margin: 0;
             padding: 0;
         }
-        .container {
-            max-width: 800px;
-            margin: 50px auto;
-            padding: 20px;
-            text-align: center;
-        }
         h1 {
-            color: #007A33;
-        }
-        .team-section {
             margin-top: 20px;
-            padding: 15px;
-            border: 2px solid #007A33;
-            display: inline-block;
+        }
+        .table {
+            width: 80%;
+            margin: 20px auto;
+            padding: 20px;
+            background-color: #1B5E20;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+        }
+        .cards {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin: 20px 0;
+        }
+        .card {
+            width: 80px;
+            height: 120px;
+            background-color: white;
+            color: black;
+            font-size: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
             border-radius: 5px;
+            border: 2px solid black;
+        }
+        .button {
+            padding: 10px 20px;
+            background-color: gold;
+            color: black;
+            font-size: 16px;
+            border: none;
+            cursor: pointer;
+            margin: 10px;
+            border-radius: 5px;
+        }
+        .button:hover {
+            background-color: darkgoldenrod;
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h1>Hi, I'm John</h1>
-        <p>Welcome to my personal website.</p>
-        
-        <div class="team-section">
-            <h2>Big Celtics Fan</h2>
-            <p>I love watching the Boston Celtics play. Go Celtics!</p>
+
+    <h1>Welcome to Free Poker</h1>
+    <p>A simple poker experience</p>
+
+    <div class="table">
+        <h2>Poker Table</h2>
+        <div class="cards">
+            <div class="card">A♠</div>
+            <div class="card">K♠</div>
+            <div class="card">Q♠</div>
+            <div class="card">J♠</div>
+            <div class="card">10♠</div>
         </div>
+        <button class="button">Deal</button>
+        <button class="button">Fold</button>
     </div>
+
 </body>
 </html>
