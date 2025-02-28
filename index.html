@@ -42,7 +42,6 @@
 <body>
     <h1>Texas Hold'em</h1>
     <div id="pot">Pot: $<span id="pot-amount">0</span></div>
-
     <h2>Your Hand</h2>
     <div id="player-cards"></div>
 
@@ -55,6 +54,7 @@
     <h2>Community Cards</h2>
     <div id="community-cards"></div>
 
+    <h3>Dealer's Action: <span id="dealer-action">Waiting...</span></h3>
     <h3>Current Bet: $<span id="current-bet">0</span></h3>
     <h3>Your Chips: $<span id="player-chips">1000</span></h3>
 
@@ -64,6 +64,8 @@
     <input type="number" id="raise-amount" placeholder="Raise amount">
 
     <button id="new-game">New Game</button>
+
+    <h2 id="winner-message"></h2>
 
     <script>
         let playerChips = 1000;
@@ -84,12 +86,14 @@
         const playerCards = document.getElementById('player-cards');
         const dealerCards = document.getElementById('dealer-cards');
         const communityCardsDiv = document.getElementById('community-cards');
+        const dealerActionText = document.getElementById('dealer-action');
         const callBtn = document.getElementById('call-btn');
         const raiseBtn = document.getElementById('raise-btn');
         const foldBtn = document.getElementById('fold-btn');
         const raiseAmountInput = document.getElementById('raise-amount');
         const currentBetSpan = document.getElementById('current-bet');
         const playerChipsSpan = document.getElementById('player-chips');
+        const winnerMessage = document.getElementById('winner-message');
         const newGameBtn = document.getElementById('new-game');
 
         function createDeck() {
@@ -109,6 +113,8 @@
             communityCards = [deck.pop(), deck.pop(), deck.pop(), deck.pop(), deck.pop()];
 
             roundStage = 1; // Start at flop
+            dealerActionText.textContent = "Waiting...";
+            winnerMessage.textContent = "";
 
             renderHands();
             renderCommunityCards();
@@ -124,12 +130,7 @@
         }
 
         function renderCommunityCards() {
-            let displayCards;
-            if (roundStage === 1) displayCards = communityCards.slice(0, 3); // Flop
-            else if (roundStage === 2) displayCards = communityCards.slice(0, 4); // Turn
-            else if (roundStage === 3) displayCards = communityCards.slice(0, 5); // River
-            else displayCards = communityCards; // All revealed at showdown
-
+            let displayCards = communityCards.slice(0, roundStage + 2);
             communityCardsDiv.innerHTML = displayCards.map(createCardImage).join('');
         }
 
@@ -168,6 +169,8 @@
             dealerChips -= dealerBet;
             pot += dealerBet;
             currentBet = dealerBet;
+
+            dealerActionText.textContent = `Dealer called $${dealerBet}`;
         }
 
         function advanceRound() {
@@ -186,7 +189,8 @@
         }
 
         function declareWinner() {
-            alert("Winner declared! Hand evaluation will go here.");
+            let winner = Math.random() > 0.5 ? "Player" : "Dealer";
+            winnerMessage.textContent = `${winner} wins!`;
         }
 
         function updateUI() {
