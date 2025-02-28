@@ -79,7 +79,9 @@
     </div>
     <div id="results">
       <h3>Your Best Hand: <span id="player-best-hand"></span></h3>
+      <div class="cards" id="player-best-hand-cards"></div>
       <h3>Dealer's Best Hand: <span id="dealer-best-hand"></span></h3>
+      <div class="cards" id="dealer-best-hand-cards"></div>
       <h2>Winner: <span id="winner"></span></h2>
     </div>
   </div>
@@ -108,6 +110,8 @@
     const playerBestHandSpan = document.getElementById('player-best-hand');
     const dealerBestHandSpan = document.getElementById('dealer-best-hand');
     const winnerSpan = document.getElementById('winner');
+    const playerBestHandCardsDiv = document.getElementById('player-best-hand-cards');
+    const dealerBestHandCardsDiv = document.getElementById('dealer-best-hand-cards');
 
     // Card image function (assumes images in "images/" folder)
     function cardImage(card) {
@@ -139,6 +143,8 @@
       playerBestHandSpan.textContent = "";
       dealerBestHandSpan.textContent = "";
       winnerSpan.textContent = "";
+      playerBestHandCardsDiv.innerHTML = "";
+      dealerBestHandCardsDiv.innerHTML = "";
       updateDisplay();
     }
 
@@ -199,16 +205,15 @@
 
     // Dealer's action: can call, raise, or fold
     function dealerTurn(playerBet) {
-      // Dealer folds with some probability or if insufficient funds
       if (dealerChips < playerBet || Math.random() < 0.2) {
         dealerFolded = true;
         dealerActionSpan.textContent = "Dealer folds!";
         winnerSpan.textContent = "Player wins! Dealer folded.";
         playerChips += pot;
         pot = 0;
+        updateDisplay();
         return;
       }
-      // Otherwise, dealer matches player's bet and may add an extra raise
       let dealerBet = playerBet;
       if (Math.random() < 0.5) {
         let extra = Math.floor(Math.random() * 20);
@@ -344,13 +349,15 @@
       
       playerBestHandSpan.textContent = playerBest.evaluation.description;
       dealerBestHandSpan.textContent = dealerBest.evaluation.description;
+      playerBestHandCardsDiv.innerHTML = playerBest.hand.map(cardImage).join('');
+      dealerBestHandCardsDiv.innerHTML = dealerBest.hand.map(cardImage).join('');
       
       let cmp = compareEvaluations(playerBest.evaluation, dealerBest.evaluation);
       if (cmp > 0) {
-        winnerSpan.textContent = "Player wins!";
+        winnerSpan.textContent = "Player wins with " + playerBest.evaluation.description;
         playerChips += pot;
       } else if (cmp < 0) {
-        winnerSpan.textContent = "Dealer wins!";
+        winnerSpan.textContent = "Dealer wins with " + dealerBest.evaluation.description;
         dealerChips += pot;
       } else {
         winnerSpan.textContent = "It's a tie!";
