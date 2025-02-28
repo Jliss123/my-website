@@ -75,7 +75,7 @@
         let communityCards = [];
         let deck = [];
 
-        let roundStage = 0; // 0 = Flop, 1 = Turn, 2 = River, 3 = Showdown
+        let roundStage = 0; // 0 = Pre-Flop, 1 = Flop, 2 = Turn, 3 = River, 4 = Showdown
 
         const suits = ['Hearts', 'Diamonds', 'Clubs', 'Spades'];
         const ranks = ['2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A'];
@@ -106,9 +106,9 @@
             createDeck();
             playerHand = [deck.pop(), deck.pop()];
             dealerHand = [deck.pop(), deck.pop()];
-            communityCards = [deck.pop(), deck.pop(), deck.pop()];
+            communityCards = [deck.pop(), deck.pop(), deck.pop(), deck.pop(), deck.pop()];
 
-            roundStage = 0; 
+            roundStage = 1; // Start at flop
 
             renderHands();
             renderCommunityCards();
@@ -124,7 +124,12 @@
         }
 
         function renderCommunityCards() {
-            let displayCards = communityCards.slice(0, roundStage + 3); 
+            let displayCards;
+            if (roundStage === 1) displayCards = communityCards.slice(0, 3); // Flop
+            else if (roundStage === 2) displayCards = communityCards.slice(0, 4); // Turn
+            else if (roundStage === 3) displayCards = communityCards.slice(0, 5); // River
+            else displayCards = communityCards; // All revealed at showdown
+
             communityCardsDiv.innerHTML = displayCards.map(createCardImage).join('');
         }
 
@@ -166,10 +171,11 @@
         }
 
         function advanceRound() {
-            if (roundStage < 2) {
-                roundStage++;
+            if (roundStage < 3) {
+                roundStage++; // Move to next stage
                 renderCommunityCards();
             } else {
+                roundStage = 4; // Showdown
                 revealDealerCards();
                 declareWinner();
             }
