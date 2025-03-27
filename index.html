@@ -3,7 +3,257 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Texas Hold'em Poker</title>
+  <title>Texas Hold'em Poker</title><!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Poker Game</title>
+    <style>
+        /* Add your styles here */
+        #game-board {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-top: 20px;
+        }
+        .card {
+            width: 70px;
+            height: 100px;
+            margin: 10px;
+            border: 1px solid #000;
+            border-radius: 10px;
+        }
+        .player-hand, .dealer-hand, .community-cards {
+            display: flex;
+        }
+        #buttons {
+            display: flex;
+            justify-content: space-around;
+            margin-top: 20px;
+        }
+        #game-info {
+            text-align: center;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Poker Game</h1>
+    
+    <div id="game-info">
+        <div id="player-chips">Player Chips: 1000</div>
+        <div id="dealer-chips">Dealer Chips: 1000</div>
+        <div id="pot">Pot: 0</div>
+    </div>
+
+    <div id="game-board">
+        <div class="player-hand" id="player-hand"></div>
+        <div class="community-cards" id="community-cards"></div>
+        <div class="dealer-hand" id="dealer-hand"></div>
+    </div>
+
+    <div id="buttons">
+        <button id="fold-btn">Fold</button>
+        <button id="call-btn">Call</button>
+        <button id="raise-btn">Raise</button>
+        <button id="new-game">New Game</button>
+    </div>
+
+    <script>
+        const cardValues = ['2', '3', '4', '5', '6', '7', '8', '9', '10', 'jack', 'queen', 'king', 'ace'];
+        const suits = ['hearts', 'diamonds', 'clubs', 'spades'];
+        let playerChips = 1000;
+        let dealerChips = 1000;
+        let pot = 0;
+        let currentBet = 0;
+        let playerHand = [];
+        let dealerHand = [];
+        let communityCards = [];
+        let roundStage = 0;
+        let dealerFolded = false;
+
+        // Card deck initialization
+        const deck = createDeck();
+
+        // Utility to create a deck of cards
+        function createDeck() {
+            let deck = [];
+            for (let value of cardValues) {
+                for (let suit of suits) {
+                    deck.push(`${value}_of_${suit}.png`);
+                }
+            }
+            return deck;
+        }
+
+        // Shuffle deck
+        function shuffleDeck(deck) {
+            for (let i = deck.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [deck[i], deck[j]] = [deck[j], deck[i]];
+            }
+        }
+
+        // Deal cards to the player and dealer
+        function dealCards() {
+            shuffleDeck(deck);
+            playerHand = [deck.pop(), deck.pop()];
+            dealerHand = [deck.pop(), deck.pop()];
+            communityCards = [];
+
+            // Update the display
+            updateDisplay();
+        }
+
+        // Update the game display
+        function updateDisplay() {
+            document.getElementById('player-hand').innerHTML = '';
+            document.getElementById('dealer-hand').innerHTML = '';
+            document.getElementById('community-cards').innerHTML = '';
+
+            // Show player hand
+            playerHand.forEach(card => {
+                const img = document.createElement('img');
+                img.src = `${card}`;
+                img.classList.add('card');
+                document.getElementById('player-hand').appendChild(img);
+            });
+
+            // Show dealer hand (one card face-up)
+            const dealerCard = document.createElement('img');
+            dealerCard.src = `${dealerHand[0]}`;
+            dealerCard.classList.add('card');
+            document.getElementById('dealer-hand').appendChild(dealerCard);
+
+            // Show community cards
+            communityCards.forEach(card => {
+                const img = document.createElement('img');
+                img.src = `${card}`;
+                img.classList.add('card');
+                document.getElementById('community-cards').appendChild(img);
+            });
+
+            // Update game info
+            document.getElementById('player-chips').textContent = `Player Chips: ${playerChips}`;
+            document.getElementById('dealer-chips').textContent = `Dealer Chips: ${dealerChips}`;
+            document.getElementById('pot').textContent = `Pot: ${pot}`;
+        }
+
+        // Evaluate a hand (simplified)
+        function evaluateHand(hand) {
+            // In this case, we'll just evaluate the highest card (you can improve this with full poker hand logic)
+            const values = hand.map(card => card.split('_')[0]);
+            const valueOrder = { '2': 2, '3': 3, '4': 4, '5': 5, '6': 6, '7': 7, '8': 8, '9': 9, '10': 10, 'jack': 11, 'queen': 12, 'king': 13, 'ace': 14 };
+            let highestValue = Math.max(...values.map(value => valueOrder[value]));
+            return highestValue;
+        }
+
+        // Handle player action (fold, call, raise)
+        function handlePlayerAction(action) {
+            if (action === 'fold') {
+                dealerChips += pot;
+                pot = 0;
+                dealerFolded = true;
+                updateDisplay();
+                alert("You folded! Dealer wins the round.");
+                return;
+            }
+
+            if (action === 'call') {
+                // Player calls, match the current bet
+                if (playerChips < currentBet) {
+                    alert("You don't have enough chips to call!");
+                    return;
+                }
+
+                playerChips -= currentBet;
+                pot += currentBet;
+            }
+
+            if (action === 'raise') {
+                // Raise logic (adjust this for a realistic raise system)
+                const raiseAmount = parseInt(prompt("Enter the raise amount:"));
+                if (isNaN(raiseAmount) || raiseAmount <= 0 || raiseAmount > playerChips) {
+                    alert("Invalid raise amount.");
+                    return;
+                }
+                currentBet += raiseAmount;
+                playerChips -= raiseAmount;
+                pot += raiseAmount;
+            }
+
+            dealerAction();
+        }
+
+        // Simulate dealer action (fold, call, raise)
+        function dealerAction() {
+            if (dealerFolded) return;
+
+            const action = Math.random() > 0.5 ? 'call' : 'fold'; // Dealer calls 50% of the time, folds the rest
+            if (action === 'fold') {
+                dealerChips += pot;
+                pot = 0;
+                alert("Dealer folded! You win the round!");
+            } else {
+                dealerChips -= currentBet;
+                pot += currentBet;
+                alert("Dealer calls!");
+            }
+
+            // Show community cards and evaluate winner
+            if (roundStage === 0) {
+                communityCards.push(deck.pop(), deck.pop(), deck.pop()); // Flop
+                updateDisplay();
+                roundStage = 1;
+            } else if (roundStage === 1) {
+                communityCards.push(deck.pop()); // Turn
+                updateDisplay();
+                roundStage = 2;
+            } else if (roundStage === 2) {
+                communityCards.push(deck.pop()); // River
+                updateDisplay();
+                roundStage = 3;
+            }
+
+            // Evaluate and determine winner
+            const result = determineWinner();
+            alert(result);
+        }
+
+        // Determine the winner based on hands
+        function determineWinner() {
+            const playerHandRank = evaluateHand(playerHand.concat(communityCards));
+            const dealerHandRank = evaluateHand(dealerHand.concat(communityCards));
+
+            if (playerHandRank === dealerHandRank) {
+                return "It's a tie!";
+            }
+            return playerHandRank > dealerHandRank ? "You win!" : "Dealer wins!";
+        }
+
+        // Handle the start of a new game
+        document.getElementById('new-game').addEventListener('click', () => {
+            playerChips = 1000;
+            dealerChips = 1000;
+            pot = 0;
+            currentBet = 0;
+            roundStage = 0;
+            dealerFolded = false;
+            updateDisplay();
+            dealCards();
+        });
+
+        // Handle player fold, call, raise actions
+        document.getElementById('fold-btn').addEventListener('click', () => handlePlayerAction('fold'));
+        document.getElementById('call-btn').addEventListener('click', () => handlePlayerAction('call'));
+        document.getElementById('raise-btn').addEventListener('click', () => handlePlayerAction('raise'));
+
+        // Initialize the game
+        dealCards();
+    </script>
+</body>
+</html>
   <style>
     body {
       font-family: Arial, sans-serif;
