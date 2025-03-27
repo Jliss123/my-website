@@ -302,14 +302,14 @@
       else if (counts[0] === 2) { rank = 1; description = "One Pair"; }
       else { rank = 0; description = "High Card"; }
       
-      return { rank, description };
+      return { rank, description, tiebreaker: vals };
     }
 
-    // Compare hands to determine winner
+    // Determine winner based on best hand
     function determineWinner() {
-      const playerBest = evaluateFiveCardHand([...playerHand, ...communityCards]);
-      const dealerBest = evaluateFiveCardHand([...dealerHand, ...communityCards]);
-
+      let playerBest = evaluateFiveCardHand([...playerHand, ...communityCards]);
+      let dealerBest = evaluateFiveCardHand([...dealerHand, ...communityCards]);
+      
       playerBestHandSpan.textContent = playerBest.description;
       dealerBestHandSpan.textContent = dealerBest.description;
       
