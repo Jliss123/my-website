@@ -5,41 +5,80 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Poker Game</title>
     <style>
-        /* Basic styling for the game */
-        #game-board {
-            display: flex;
-            justify-content: center;
-            align-items: center;
+        body {
+            background-color: #2e8b57; /* Green background for the poker table */
+            color: white;
+            font-family: 'Arial', sans-serif;
+            text-align: center;
+        }
+
+        h1 {
+            font-size: 3rem;
             margin-top: 20px;
         }
+
+        #game-info {
+            font-size: 1.2rem;
+            margin-top: 20px;
+            margin-bottom: 20px;
+        }
+
         .card {
-            width: 70px;
-            height: 100px;
+            width: 90px;
+            height: 130px;
             margin: 10px;
-            border: 1px solid #000;
             border-radius: 10px;
         }
+
         .player-hand, .dealer-hand, .community-cards {
             display: flex;
+            justify-content: center;
+            margin-bottom: 20px;
         }
+
         #buttons {
             display: flex;
-            justify-content: space-around;
+            justify-content: center;
+            gap: 20px;
             margin-top: 20px;
         }
-        #game-info {
-            text-align: center;
-            margin-top: 20px;
+
+        button {
+            padding: 10px 20px;
+            font-size: 1rem;
+            border-radius: 5px;
+            border: none;
+            cursor: pointer;
+            background-color: #4CAF50; /* Stylish green button */
+            color: white;
+            transition: background-color 0.3s;
+        }
+
+        button:hover {
+            background-color: #45a049;
+        }
+
+        #new-game {
+            background-color: #f44336;
+        }
+
+        #new-game:hover {
+            background-color: #da190b;
+        }
+
+        .chips-info {
+            margin-top: 10px;
         }
     </style>
 </head>
 <body>
+
     <h1>Poker Game</h1>
-    
+
     <div id="game-info">
-        <div id="player-chips">Player Chips: 1000</div>
-        <div id="dealer-chips">Dealer Chips: 1000</div>
-        <div id="pot">Pot: 0</div>
+        <div id="player-chips" class="chips-info">Player Chips: 1000</div>
+        <div id="dealer-chips" class="chips-info">Dealer Chips: 1000</div>
+        <div id="pot" class="chips-info">Pot: 0</div>
     </div>
 
     <div id="game-board">
