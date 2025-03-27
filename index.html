@@ -115,7 +115,12 @@
 
     // Card image function (referencing images directly with updated card names)
     function cardImage(card) {
-      return `<img src="${card.value.toLowerCase()}_of_${card.suit.toLowerCase()}.png" class="card" alt="${card.value} of ${card.suit}">`;
+      const faceCards = {
+        '2': '2', '3': '3', '4': '4', '5': '5', '6': '6', '7': '7', '8': '8', '9': '9', '10': '10',
+        'J': 'jack', 'Q': 'queen', 'K': 'king', 'A': 'ace'
+      };
+      let value = faceCards[card.value] || card.value.toLowerCase();
+      return `<img src="${value}_of_${card.suit.toLowerCase()}.png" class="card" alt="${card.value} of ${card.suit}">`;
     }
 
     // Create and shuffle deck
@@ -307,26 +312,27 @@
 
       playerBestHandSpan.textContent = playerBest.description;
       dealerBestHandSpan.textContent = dealerBest.description;
-
-      // Display the best hand cards of both player and dealer
-      playerBestHandCardsDiv.innerHTML = [...playerHand, ...communityCards].slice(0, 5).map(cardImage).join('');
-      dealerBestHandCardsDiv.innerHTML = [...dealerHand, ...communityCards].slice(0, 5).map(cardImage).join('');
       
-      // Compare ranks first, then tiebreaker
-      let winner = '';
+      playerBestHandCardsDiv.innerHTML = [...playerHand, ...communityCards]
+        .slice(0, 5)
+        .map(cardImage).join('');
+        
+      dealerBestHandCardsDiv.innerHTML = [...dealerHand, ...communityCards]
+        .slice(0, 5)
+        .map(cardImage).join('');
+
       if (playerBest.rank > dealerBest.rank) {
-        winner = "Player wins!";
+        winnerSpan.textContent = "Player wins!";
         playerChips += pot;
-      } else if (playerBest.rank < dealerBest.rank) {
-        winner = "Dealer wins!";
+      } else if (dealerBest.rank > playerBest.rank) {
+        winnerSpan.textContent = "Dealer wins!";
         dealerChips += pot;
       } else {
-        winner = "It's a tie!";
-        playerChips += pot / 2;
-        dealerChips += pot / 2;
+        winnerSpan.textContent = "It's a tie!";
+        playerChips += Math.floor(pot / 2);
+        dealerChips += Math.floor(pot / 2);
       }
-
-      winnerSpan.textContent = winner;
+      
       pot = 0;
       updateDisplay();
     }
