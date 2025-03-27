@@ -1,4 +1,4 @@
-<!DOCTYPE html> 
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
@@ -22,16 +22,9 @@
       justify-content: center;
       margin: 10px 0;
     }
-    .card {
+    .card img {
       width: 80px;
       height: 120px;
-      margin: 5px;
-      border: 1px solid #000;
-      background-color: white;
-    }
-    .card img {
-      width: 100%;
-      height: 100%;
     }
     .card-back {
       width: 80px;
@@ -53,6 +46,11 @@
 <body>
   <div id="game-container">
     <h1>Texas Hold'em Poker</h1>
+    <div id="balances">
+      <h3>Your Chips: $<span id="player-chips">1000</span></h3>
+      <h3>Dealer's Chips: $<span id="dealer-chips">1000</span></h3>
+    </div>
+    <div id="pot">Pot: $<span id="pot-amount">0</span></div>
     <h2>Your Hand</h2>
     <div class="cards" id="player-hand"></div>
     <h2>Dealer's Hand</h2>
@@ -62,8 +60,21 @@
     </div>
     <h2>Community Cards</h2>
     <div class="cards" id="community-cards"></div>
+    <h3>Dealer's Action: <span id="dealer-action">Waiting...</span></h3>
+    <h3>Current Bet: $<span id="current-bet">0</span></h3>
     <div id="controls">
+      <button id="fold-btn">Fold</button>
+      <button id="call-btn">Call</button>
+      <button id="raise-btn">Raise</button>
+      <input type="number" id="raise-amount" placeholder="Raise amount">
       <button id="new-game">New Game</button>
+    </div>
+    <div id="results">
+      <h3>Your Best Hand: <span id="player-best-hand"></span></h3>
+      <div class="cards" id="player-best-hand-cards"></div>
+      <h3>Dealer's Best Hand: <span id="dealer-best-hand"></span></h3>
+      <div class="cards" id="dealer-best-hand-cards"></div>
+      <h2>Winner: <span id="winner"></span></h2>
     </div>
   </div>
   <script>
@@ -71,6 +82,10 @@
     let playerHand = [];
     let dealerHand = [];
     let communityCards = [];
+    let playerChips = 1000;
+    let dealerChips = 1000;
+    let pot = 0;
+    let currentBet = 0;
 
     function cardImage(card) {
       return `<img src="${card.value}_of_${card.suit}.png" class="card" alt="${card.value} of ${card.suit}">`;
@@ -78,10 +93,10 @@
 
     function createDeck() {
       deck = [];
-      const suitsArr = ['hearts', 'diamonds', 'clubs', 'spades'];
-      const valuesArr = ['2','3','4','5','6','7','8','9','10','J','Q','K','A'];
-      for (let suit of suitsArr) {
-        for (let value of valuesArr) {
+      const suits = ['hearts', 'diamonds', 'clubs', 'spades'];
+      const values = ['2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A'];
+      for (let suit of suits) {
+        for (let value of values) {
           deck.push({ value, suit });
         }
       }
@@ -97,12 +112,26 @@
     }
 
     function updateDisplay() {
+      document.getElementById('player-chips').textContent = playerChips;
+      document.getElementById('dealer-chips').textContent = dealerChips;
+      document.getElementById('pot-amount').textContent = pot;
+      document.getElementById('current-bet').textContent = currentBet;
       document.getElementById('player-hand').innerHTML = playerHand.map(cardImage).join('');
-      document.getElementById('dealer-hand').innerHTML = '<div class="card-back"></div><div class="card-back"></div>';
-      document.getElementById('community-cards').innerHTML = communityCards.slice(0, 3).map(cardImage).join('');
+      document.getElementById('dealer-hand').innerHTML = `<div class="card-back"></div><div class="card-back"></div>`;
+      document.getElementById('community-cards').innerHTML = "";
     }
 
-    document.getElementById('new-game').addEventListener('click', dealCards);
+    document.getElementById('call-btn').addEventListener('click', () => alert('Call button clicked'));
+    document.getElementById('raise-btn').addEventListener('click', () => alert('Raise button clicked'));
+    document.getElementById('fold-btn').addEventListener('click', () => alert('Fold button clicked'));
+    document.getElementById('new-game').addEventListener('click', () => {
+      playerChips = 1000;
+      dealerChips = 1000;
+      pot = 0;
+      currentBet = 0;
+      dealCards();
+    });
+
     dealCards();
   </script>
 </body>
