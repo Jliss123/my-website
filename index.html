@@ -37,7 +37,7 @@
       width: 80px;
       height: 120px;
       margin: 5px;
-      background: url('images/card_back.png') no-repeat center;
+      background: url('card_back.png') no-repeat center;
       background-size: cover;
     }
     #controls button, #controls input {
@@ -115,7 +115,7 @@
 
     // Card image function (assumes images are named like "ace_of_clubs.png", "2_of_hearts.png", etc.)
     function cardImage(card) {
-      return `<img src="images/${card.value}_of_${card.suit}.png" class="card" alt="${card.value} of ${card.suit}">`;
+      return `<img src="${card.value}_of_${card.suit}.png" class="card" alt="${card.value} of ${card.suit}">`;
     }
 
     // Create and shuffle deck
@@ -175,70 +175,45 @@
       communityCardsDiv.innerHTML = communityCards.slice(0, numToShow).map(cardImage).join('');
     }
 
-    // Handle player's action: call, raise, or fold
-    function handlePlayerAction(action) {
-      if (action === 'fold') {
-        winnerSpan.textContent = "Dealer wins by fold!";
-        dealerChips += pot;
-        pot = 0;
-        updateDisplay();
-        return;
-      }
-      let betAmount = 0;
-      if (action === 'call') {
-        betAmount = currentBet;
-      } else if (action === 'raise') {
-        betAmount = parseInt(document.getElementById('raise-amount').value) || 0;
-        if (betAmount > playerChips) {
-          alert("Not enough chips to raise!");
-          return;
-        }
-      }
-      playerChips -= betAmount;
-      pot += betAmount;
+    // Poker hand evaluation function (simplified)
+    function evaluateHand(hand) {
+      // Combine player hand and community cards
+      const allCards = [...hand, ...communityCards];
       
-      // Dealer takes action based on player's bet
-      dealerTurn(betAmount);
-      updateDisplay();
-      advanceRound();
-    }
-
-    // Dealer's action: can call, raise, or fold
-    function dealerTurn(playerBet) {
-      if (dealerChips < playerBet || Math.random() < 0.2) {
-        dealerFolded = true;
-        dealerActionSpan.textContent = "Dealer folds!";
-        winnerSpan.textContent = "Player wins! Dealer folded.";
-        playerChips += pot;
-        pot = 0;
-        updateDisplay();
-        return;
-      }
-
-      dealerChips -= playerBet;
-      pot += playerBet;
-      dealerActionSpan.textContent = "Dealer calls!";
-      updateDisplay();
-    }
-
-    // Advance to the next round: flop -> turn -> river -> showdown
-    function advanceRound() {
-      if (roundStage === 1) {
-        roundStage = 2; // Turn
-      } else if (roundStage === 2) {
-        roundStage = 3; // River
-      } else if (roundStage === 3) {
-        roundStage = 4; // Showdown
-        determineWinner();
-      }
-      updateDisplay();
+      // Evaluate the best hand (for simplicity, let's assume high card)
+      // Sorting by value (this is simplified, poker hand evaluation needs more work)
+      const valueOrder = ['2','3','4','5','6','7','8','9','10','J','Q','K','A'];
+      const sortedHand = allCards.sort((a, b) => valueOrder.indexOf(a.value) - valueOrder.indexOf(b.value));
+      return sortedHand.slice(0, 5);
     }
 
     // Determine the winner (simplified)
     function determineWinner() {
-      // Add logic to evaluate best hands here (e.g., using poker hand rankings)
-      winnerSpan.textContent = "Player wins with the best hand!";
-      playerChips += pot;
+      const playerBest = evaluateHand(playerHand);
+      const dealerBest = evaluateHand(dealerHand);
+      
+      // Display the best hands
+      playerBestHandSpan.textContent = playerBest.map(card => `${card.value} of ${card.suit}`).join(', ');
+      dealerBestHandSpan.textContent = dealerBest.map(card => `${card.value} of ${card.suit}`).join(', ');
+      
+      // Display the best hand cards
+      playerBestHandCardsDiv.innerHTML = playerBest.map(cardImage).join('');
+      dealerBestHandCardsDiv.innerHTML = dealerBest.map(cardImage).join('');
+      
+      // Simplified winner logic: Higher value wins
+      const playerValue = playerBest.reduce((sum, card) => sum + valueOrder.indexOf(card.value), 0);
+      const dealerValue = dealerBest.reduce((sum, card) => sum + valueOrder.indexOf(card.value), 0);
+      
+      if (playerValue > dealerValue) {
+        winnerSpan.textContent = "Player wins!";
+        playerChips += pot;
+      } else if (playerValue < dealerValue) {
+        winnerSpan.textContent = "Dealer wins!";
+        dealerChips += pot;
+      } else {
+        winnerSpan.textContent = "It's a tie!";
+      }
+      
       pot = 0;
       updateDisplay();
     }
