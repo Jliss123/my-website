@@ -1,286 +1,337 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Poker Game</title>
-    <style>
-        body {
-            background-color: #2e8b57; /* Green background for the poker table */
-            color: white;
-            font-family: 'Arial', sans-serif;
-            text-align: center;
-        }
-
-        h1 {
-            font-size: 3rem;
-            margin-top: 20px;
-        }
-
-        #game-info {
-            font-size: 1.2rem;
-            margin-top: 20px;
-            margin-bottom: 20px;
-        }
-
-        .card {
-            width: 90px;
-            height: 130px;
-            margin: 10px;
-            border-radius: 10px;
-        }
-
-        .player-hand, .dealer-hand, .community-cards {
-            display: flex;
-            justify-content: center;
-            margin-bottom: 20px;
-        }
-
-        #buttons {
-            display: flex;
-            justify-content: center;
-            gap: 20px;
-            margin-top: 20px;
-        }
-
-        button {
-            padding: 10px 20px;
-            font-size: 1rem;
-            border-radius: 5px;
-            border: none;
-            cursor: pointer;
-            background-color: #4CAF50; /* Stylish green button */
-            color: white;
-            transition: background-color 0.3s;
-        }
-
-        button:hover {
-            background-color: #45a049;
-        }
-
-        #new-game {
-            background-color: #f44336;
-        }
-
-        #new-game:hover {
-            background-color: #da190b;
-        }
-
-        .chips-info {
-            margin-top: 10px;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Texas Hold'em Poker</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #2E8B57;
+      color: white;
+      text-align: center;
+      margin: 0;
+      padding: 20px;
+    }
+    #game-container {
+      max-width: 800px;
+      margin: 0 auto;
+    }
+    .cards {
+      display: flex;
+      justify-content: center;
+      margin: 10px 0;
+    }
+    .card {
+      width: 80px;
+      height: 120px;
+      margin: 5px;
+      border: 1px solid #000;
+      background-color: white;
+    }
+    .card img {
+      width: 100%;
+      height: 100%;
+    }
+    .card-back {
+      width: 80px;
+      height: 120px;
+      margin: 5px;
+      background: url('card_back.png') no-repeat center;
+      background-size: cover;
+    }
+    #controls button, #controls input {
+      margin: 5px;
+      padding: 10px 15px;
+      font-size: 16px;
+    }
+    #results {
+      margin-top: 20px;
+    }
+  </style>
 </head>
 <body>
-
-    <h1>Poker Game</h1>
-
-    <div id="game-info">
-        <div id="player-chips" class="chips-info">Player Chips: 1000</div>
-        <div id="dealer-chips" class="chips-info">Dealer Chips: 1000</div>
-        <div id="pot" class="chips-info">Pot: 0</div>
+  <div id="game-container">
+    <h1>Texas Hold'em Poker</h1>
+    <div id="balances">
+      <h3>Your Chips: $<span id="player-chips">1000</span></h3>
+      <h3>Dealer's Chips: $<span id="dealer-chips">1000</span></h3>
     </div>
-
-    <div id="game-board">
-        <div class="player-hand" id="player-hand"></div>
-        <div class="community-cards" id="community-cards"></div>
-        <div class="dealer-hand" id="dealer-hand"></div>
+    <div id="pot">Pot: $<span id="pot-amount">0</span></div>
+    <h2>Your Hand</h2>
+    <div class="cards" id="player-hand"></div>
+    <h2>Dealer's Hand</h2>
+    <div class="cards" id="dealer-hand">
+      <!-- Initially, dealer's cards are hidden -->
+      <div class="card-back"></div>
+      <div class="card-back"></div>
     </div>
-
-    <div id="buttons">
-        <button id="fold-btn">Fold</button>
-        <button id="call-btn">Call</button>
-        <button id="raise-btn">Raise</button>
-        <button id="new-game">New Game</button>
+    <h2>Community Cards</h2>
+    <div class="cards" id="community-cards"></div>
+    <h3>Dealer's Action: <span id="dealer-action">Waiting...</span></h3>
+    <h3>Current Bet: $<span id="current-bet">0</span></h3>
+    <div id="controls">
+      <button id="fold-btn">Fold</button>
+      <button id="call-btn">Call</button>
+      <button id="raise-btn">Raise</button>
+      <input type="number" id="raise-amount" placeholder="Raise amount">
+      <button id="new-game">New Game</button>
     </div>
+    <div id="results">
+      <h3>Your Best Hand: <span id="player-best-hand"></span></h3>
+      <div class="cards" id="player-best-hand-cards"></div>
+      <h3>Dealer's Best Hand: <span id="dealer-best-hand"></span></h3>
+      <div class="cards" id="dealer-best-hand-cards"></div>
+      <h2>Winner: <span id="winner"></span></h2>
+    </div>
+  </div>
+  <script>
+    // Global variables
+    let deck = [];
+    let playerHand = [];
+    let dealerHand = [];
+    let communityCards = [];
+    let playerChips = 1000;
+    let dealerChips = 1000;
+    let pot = 0;
+    let currentBet = 0;
+    let roundStage = 0; // 0: Pre-flop, 1: Flop, 2: Turn, 3: River, 4: Showdown
+    let dealerFolded = false;
 
-    <script>
-        const cardValues = ['2', '3', '4', '5', '6', '7', '8', '9', '10', 'jack', 'queen', 'king', 'ace'];
-        const suits = ['hearts', 'diamonds', 'clubs', 'spades'];
-        let playerChips = 1000;
-        let dealerChips = 1000;
-        let pot = 0;
-        let currentBet = 0;
-        let playerHand = [];
-        let dealerHand = [];
-        let communityCards = [];
-        let roundStage = 0; // 0 = pre-flop, 1 = flop, 2 = turn, 3 = river
-        let dealerFolded = false;
+    // DOM elements
+    const playerChipsSpan = document.getElementById('player-chips');
+    const dealerChipsSpan = document.getElementById('dealer-chips');
+    const potAmountSpan = document.getElementById('pot-amount');
+    const playerHandDiv = document.getElementById('player-hand');
+    const dealerHandDiv = document.getElementById('dealer-hand');
+    const communityCardsDiv = document.getElementById('community-cards');
+    const dealerActionSpan = document.getElementById('dealer-action');
+    const currentBetSpan = document.getElementById('current-bet');
+    const playerBestHandSpan = document.getElementById('player-best-hand');
+    const dealerBestHandSpan = document.getElementById('dealer-best-hand');
+    const winnerSpan = document.getElementById('winner');
+    const playerBestHandCardsDiv = document.getElementById('player-best-hand-cards');
+    const dealerBestHandCardsDiv = document.getElementById('dealer-best-hand-cards');
 
-        // Card deck initialization
-        const deck = createDeck();
+    // Card image function (referencing images directly)
+    function cardImage(card) {
+      return `<img src="${card.value}_of_${card.suit}.png" class="card" alt="${card.value} of ${card.suit}">`;
+    }
 
-        // Utility to create a deck of cards
-        function createDeck() {
-            let deck = [];
-            for (let value of cardValues) {
-                for (let suit of suits) {
-                    deck.push(`${value}_of_${suit}.png`);
-                }
-            }
-            return deck;
+    // Create and shuffle deck
+    function createDeck() {
+      deck = [];
+      const suitsArr = ['hearts', 'diamonds', 'clubs', 'spades'];
+      const valuesArr = ['2','3','4','5','6','7','8','9','10','J','Q','K','A'];
+      for (let suit of suitsArr) {
+        for (let value of valuesArr) {
+          deck.push({ value, suit });
         }
+      }
+      deck.sort(() => Math.random() - 0.5);
+    }
 
-        // Shuffle deck
-        function shuffleDeck(deck) {
-            for (let i = deck.length - 1; i > 0; i--) {
-                const j = Math.floor(Math.random() * (i + 1));
-                [deck[i], deck[j]] = [deck[j], deck[i]];
-            }
+    // Deal initial hands and store all 5 community cards (to be revealed progressively)
+    function dealCards() {
+      createDeck();
+      playerHand = [deck.pop(), deck.pop()];
+      dealerHand = [deck.pop(), deck.pop()];
+      communityCards = [deck.pop(), deck.pop(), deck.pop(), deck.pop(), deck.pop()];
+      roundStage = 1; // start with flop
+      dealerFolded = false;
+      dealerActionSpan.textContent = "Waiting...";
+      playerBestHandSpan.textContent = "";
+      dealerBestHandSpan.textContent = "";
+      winnerSpan.textContent = "";
+      playerBestHandCardsDiv.innerHTML = "";
+      dealerBestHandCardsDiv.innerHTML = "";
+      updateDisplay();
+    }
+
+    // Update display of chips, pot, and cards
+    function updateDisplay() {
+      playerChipsSpan.textContent = playerChips;
+      dealerChipsSpan.textContent = dealerChips;
+      potAmountSpan.textContent = pot;
+      currentBetSpan.textContent = currentBet;
+      
+      // Display player's hand
+      playerHandDiv.innerHTML = playerHand.map(cardImage).join('');
+      
+      // Display dealer's hand (hidden until showdown or if dealer folds)
+      if (dealerFolded) {
+        dealerHandDiv.innerHTML = `<h3>Dealer Folded</h3>`;
+      } else if (roundStage < 4) {
+        dealerHandDiv.innerHTML = `<div class="card-back"></div><div class="card-back"></div>`;
+      } else {
+        dealerHandDiv.innerHTML = dealerHand.map(cardImage).join('');
+      }
+      
+      // Display community cards based on roundStage:
+      let numToShow = 0;
+      if (roundStage === 1) numToShow = 3; // Flop
+      else if (roundStage === 2) numToShow = 4; // Turn
+      else if (roundStage >= 3) numToShow = 5; // River or Showdown
+      communityCardsDiv.innerHTML = communityCards.slice(0, numToShow).map(cardImage).join('');
+    }
+
+    // Handle player's action: call, raise, or fold
+    function handlePlayerAction(action) {
+      if (action === 'fold') {
+        winnerSpan.textContent = "Dealer wins by fold!";
+        dealerChips += pot;
+        pot = 0;
+        updateDisplay();
+        return;
+      }
+      let betAmount = 0;
+      if (action === 'call') {
+        betAmount = currentBet;
+      } else if (action === 'raise') {
+        betAmount = parseInt(document.getElementById('raise-amount').value) || 0;
+        if (betAmount > playerChips) {
+          alert("Not enough chips to raise!");
+          return;
         }
+      }
+      playerChips -= betAmount;
+      pot += betAmount;
+      
+      // Dealer takes action based on player's bet
+      dealerTurn(betAmount);
+      updateDisplay();
+      advanceRound();
+    }
 
-        // Deal cards to the player and dealer
-        function dealCards() {
-            shuffleDeck(deck);
-            playerHand = [deck.pop(), deck.pop()];
-            dealerHand = [deck.pop(), deck.pop()];
-            communityCards = [];
+    // Dealer's action: can call, raise, or fold
+    function dealerTurn(playerBet) {
+      if (dealerChips < playerBet || Math.random() < 0.2) {
+        dealerFolded = true;
+        dealerActionSpan.textContent = "Dealer folds!";
+        winnerSpan.textContent = "Player wins! Dealer folded.";
+        playerChips += pot;
+        pot = 0;
+        updateDisplay();
+        return;
+      }
+      let dealerBet = playerBet;
+      if (Math.random() < 0.5) {
+        let extra = Math.floor(Math.random() * 20);
+        dealerBet += extra;
+      }
+      if (dealerBet > dealerChips) {
+        dealerBet = dealerChips;
+      }
+      dealerChips -= dealerBet;
+      pot += dealerBet;
+      currentBet = dealerBet;
+      dealerActionSpan.textContent = `Dealer calls $${dealerBet}`;
+    }
 
-            // Update the display
-            updateDisplay();
+    // Advance round: Flop -> Turn -> River -> Showdown
+    function advanceRound() {
+      if (dealerFolded) return; // game already over
+      if (roundStage < 3) {
+        roundStage++;
+        updateDisplay();
+      } else {
+        roundStage = 4; // Showdown
+        revealDealerCards();
+        determineWinner();
+      }
+    }
+
+    // Reveal dealer's hand at showdown
+    function revealDealerCards() {
+      dealerHandDiv.innerHTML = dealerHand.map(cardImage).join('');
+    }
+
+    // ---- Hand Evaluation Logic ----
+    // Map card values to numbers
+    const valueMap = {'2':2, '3':3, '4':4, '5':5, '6':6, '7':7, '8':8, '9':9, '10':10, 'J':11, 'Q':12, 'K':13, 'A':14};
+
+    // Evaluate a 5-card hand and return an object { rank, tiebreaker, description }
+    // Ranking: 8: Straight Flush, 7: Four of a Kind, 6: Full House, 5: Flush,
+    // 4: Straight, 3: Three of a Kind, 2: Two Pair, 1: One Pair, 0: High Card.
+    function evaluateFiveCardHand(hand) {
+      let vals = hand.map(card => valueMap[card.value]).sort((a, b) => b - a);
+      let suitsCount = {};
+      hand.forEach(card => { suitsCount[card.suit] = (suitsCount[card.suit] || 0) + 1; });
+      let isFlush = Object.values(suitsCount).some(count => count === 5);
+      
+      // Check straight
+      let uniqueVals = [...new Set(vals)];
+      let isStraight = false;
+      let straightHigh = 0;
+      if (uniqueVals.length >= 5) {
+        for (let i = 0; i <= uniqueVals.length - 5; i++) {
+          let seq = uniqueVals.slice(i, i + 5);
+          if (seq[0] - seq[4] === 4) {
+            isStraight = true;
+            straightHigh = seq[0];
+            break;
+          }
         }
-
-        // Update the game display
-        function updateDisplay() {
-            document.getElementById('player-hand').innerHTML = '';
-            document.getElementById('dealer-hand').innerHTML = '';
-            document.getElementById('community-cards').innerHTML = '';
-
-            // Show player hand
-            playerHand.forEach(card => {
-                const img = document.createElement('img');
-                img.src = `${card}`;
-                img.classList.add('card');
-                document.getElementById('player-hand').appendChild(img);
-            });
-
-            // Show dealer hand (only one card face-up)
-            const dealerCard = document.createElement('img');
-            dealerCard.src = `${dealerHand[0]}`;
-            dealerCard.classList.add('card');
-            document.getElementById('dealer-hand').appendChild(dealerCard);
-
-            // Show community cards (if any)
-            communityCards.forEach(card => {
-                const img = document.createElement('img');
-                img.src = `${card}`;
-                img.classList.add('card');
-                document.getElementById('community-cards').appendChild(img);
-            });
-
-            // Update game info
-            document.getElementById('player-chips').textContent = `Player Chips: ${playerChips}`;
-            document.getElementById('dealer-chips').textContent = `Dealer Chips: ${dealerChips}`;
-            document.getElementById('pot').textContent = `Pot: ${pot}`;
+        // Special case: A,5,4,3,2
+        if (!isStraight && uniqueVals.includes(14) && uniqueVals.includes(5) &&
+            uniqueVals.includes(4) && uniqueVals.includes(3) && uniqueVals.includes(2)) {
+          isStraight = true;
+          straightHigh = 5;
         }
+      }
+      
+      // Count frequencies
+      let freq = {};
+      hand.forEach(card => { freq[card.value] = (freq[card.value] || 0) + 1; });
+      let counts = Object.values(freq).sort((a, b) => b - a);
+      
+      let rank = 0;
+      let description = '';
+      if (isStraight && isFlush) { rank = 8; description = "Straight Flush"; }
+      else if (counts[0] === 4) { rank = 7; description = "Four of a Kind"; }
+      else if (counts[0] === 3 && counts[1] === 2) { rank = 6; description = "Full House"; }
+      else if (isFlush) { rank = 5; description = "Flush"; }
+      else if (isStraight) { rank = 4; description = "Straight"; }
+      else if (counts[0] === 3) { rank = 3; description = "Three of a Kind"; }
+      else if (counts[0] === 2 && counts[1] === 2) { rank = 2; description = "Two Pair"; }
+      else if (counts[0] === 2) { rank = 1; description = "One Pair"; }
+      else { rank = 0; description = "High Card"; }
+      
+      return { rank, description };
+    }
 
-        // Evaluate a hand (simplified)
-        function evaluateHand(hand) {
-            const values = hand.map(card => card.split('_')[0]);
-            const valueOrder = { '2': 2, '3': 3, '4': 4, '5': 5, '6': 6, '7': 7, '8': 8, '9': 9, '10': 10, 'jack': 11, 'queen': 12, 'king': 13, 'ace': 14 };
-            let highestValue = Math.max(...values.map(value => valueOrder[value]));
-            return highestValue;
-        }
+    // Compare hands to determine winner
+    function determineWinner() {
+      const playerBest = evaluateFiveCardHand([...playerHand, ...communityCards]);
+      const dealerBest = evaluateFiveCardHand([...dealerHand, ...communityCards]);
 
-        // Handle player action (fold, call, raise)
-        function handlePlayerAction(action) {
-            if (action === 'fold') {
-                dealerChips += pot;
-                pot = 0;
-                dealerFolded = true;
-                updateDisplay();
-                alert("You folded! Dealer wins the round.");
-                return;
-            }
+      playerBestHandSpan.textContent = playerBest.description;
+      dealerBestHandSpan.textContent = dealerBest.description;
 
-            if (action === 'call') {
-                if (playerChips < currentBet) {
-                    alert("You don't have enough chips to call!");
-                    return;
-                }
-                playerChips -= currentBet;
-                pot += currentBet;
-            }
+      // Compare ranks first, then tiebreaker
+      let winner = '';
+      if (playerBest.rank > dealerBest.rank) {
+        winner = "Player wins!";
+        playerChips += pot;
+      } else if (playerBest.rank < dealerBest.rank) {
+        winner = "Dealer wins!";
+        dealerChips += pot;
+      } else {
+        winner = "It's a tie!";
+        playerChips += pot / 2;
+        dealerChips += pot / 2;
+      }
 
-            if (action === 'raise') {
-                const raiseAmount = parseInt(prompt("Enter the raise amount:"));
-                if (isNaN(raiseAmount) || raiseAmount <= 0 || raiseAmount > playerChips) {
-                    alert("Invalid raise amount.");
-                    return;
-                }
-                currentBet += raiseAmount;
-                playerChips -= raiseAmount;
-                pot += raiseAmount;
-            }
+      winnerSpan.textContent = winner;
+      pot = 0;
+      updateDisplay();
+    }
 
-            dealerAction();
-        }
-
-        // Simulate dealer action (fold, call, raise)
-        function dealerAction() {
-            if (dealerFolded) return;
-
-            const action = Math.random() > 0.5 ? 'call' : 'fold';
-            if (action === 'fold') {
-                dealerChips += pot;
-                pot = 0;
-                alert("Dealer folded! You win the round!");
-            } else {
-                dealerChips -= currentBet;
-                pot += currentBet;
-                alert("Dealer calls!");
-            }
-
-            // Show community cards and evaluate winner
-            if (roundStage === 0) {
-                communityCards.push(deck.pop(), deck.pop(), deck.pop()); // Flop
-                updateDisplay();
-                roundStage = 1;
-            } else if (roundStage === 1) {
-                communityCards.push(deck.pop()); // Turn
-                updateDisplay();
-                roundStage = 2;
-            } else if (roundStage === 2) {
-                communityCards.push(deck.pop()); // River
-                updateDisplay();
-                roundStage = 3;
-            }
-
-            // Evaluate and determine winner
-            const result = determineWinner();
-            alert(result);
-        }
-
-        // Determine the winner based on hands
-        function determineWinner() {
-            const playerHandRank = evaluateHand(playerHand.concat(communityCards));
-            const dealerHandRank = evaluateHand(dealerHand.concat(communityCards));
-
-            if (playerHandRank === dealerHandRank) {
-                return "It's a tie!";
-            }
-            return playerHandRank > dealerHandRank ? "You win!" : "Dealer wins!";
-        }
-
-        // Handle the start of a new game
-        document.getElementById('new-game').addEventListener('click', () => {
-            playerChips = 1000;
-            dealerChips = 1000;
-            pot = 0;
-            currentBet = 0;
-            roundStage = 0;
-            dealerFolded = false;
-            updateDisplay();
-            dealCards();
-        });
-
-        // Handle player fold, call, raise actions
-        document.getElementById('fold-btn').addEventListener('click', () => handlePlayerAction('fold'));
-        document.getElementById('call-btn').addEventListener('click', () => handlePlayerAction('call'));
-        document.getElementById('raise-btn').addEventListener('click', () => handlePlayerAction('raise'));
-
-        // Initialize the game
-        dealCards();
-    </script>
+    // Initialize game and events
+    document.getElementById('new-game').addEventListener('click', dealCards);
+    document.getElementById('fold-btn').addEventListener('click', () => handlePlayerAction('fold'));
+    document.getElementById('call-btn').addEventListener('click', () => handlePlayerAction('call'));
+    document.getElementById('raise-btn').addEventListener('click', () => handlePlayerAction('raise'));
+  </script>
 </body>
 </html>
