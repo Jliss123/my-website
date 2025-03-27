@@ -1,16 +1,11 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Texas Hold'em Poker</title><!DOCTYPE html>
-<html lang="en">
-<head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Poker Game</title>
     <style>
-        /* Add your styles here */
+        /* Basic styling for the game */
         #game-board {
             display: flex;
             justify-content: center;
@@ -70,7 +65,7 @@
         let playerHand = [];
         let dealerHand = [];
         let communityCards = [];
-        let roundStage = 0;
+        let roundStage = 0; // 0 = pre-flop, 1 = flop, 2 = turn, 3 = river
         let dealerFolded = false;
 
         // Card deck initialization
@@ -120,13 +115,13 @@
                 document.getElementById('player-hand').appendChild(img);
             });
 
-            // Show dealer hand (one card face-up)
+            // Show dealer hand (only one card face-up)
             const dealerCard = document.createElement('img');
             dealerCard.src = `${dealerHand[0]}`;
             dealerCard.classList.add('card');
             document.getElementById('dealer-hand').appendChild(dealerCard);
 
-            // Show community cards
+            // Show community cards (if any)
             communityCards.forEach(card => {
                 const img = document.createElement('img');
                 img.src = `${card}`;
@@ -142,7 +137,6 @@
 
         // Evaluate a hand (simplified)
         function evaluateHand(hand) {
-            // In this case, we'll just evaluate the highest card (you can improve this with full poker hand logic)
             const values = hand.map(card => card.split('_')[0]);
             const valueOrder = { '2': 2, '3': 3, '4': 4, '5': 5, '6': 6, '7': 7, '8': 8, '9': 9, '10': 10, 'jack': 11, 'queen': 12, 'king': 13, 'ace': 14 };
             let highestValue = Math.max(...values.map(value => valueOrder[value]));
@@ -161,18 +155,15 @@
             }
 
             if (action === 'call') {
-                // Player calls, match the current bet
                 if (playerChips < currentBet) {
                     alert("You don't have enough chips to call!");
                     return;
                 }
-
                 playerChips -= currentBet;
                 pot += currentBet;
             }
 
             if (action === 'raise') {
-                // Raise logic (adjust this for a realistic raise system)
                 const raiseAmount = parseInt(prompt("Enter the raise amount:"));
                 if (isNaN(raiseAmount) || raiseAmount <= 0 || raiseAmount > playerChips) {
                     alert("Invalid raise amount.");
@@ -190,7 +181,7 @@
         function dealerAction() {
             if (dealerFolded) return;
 
-            const action = Math.random() > 0.5 ? 'call' : 'fold'; // Dealer calls 50% of the time, folds the rest
+            const action = Math.random() > 0.5 ? 'call' : 'fold';
             if (action === 'fold') {
                 dealerChips += pot;
                 pot = 0;
@@ -252,269 +243,5 @@
         // Initialize the game
         dealCards();
     </script>
-</body>
-</html>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      background-color: #2E8B57;
-      color: white;
-      text-align: center;
-      margin: 0;
-      padding: 20px;
-    }
-    #game-container {
-      max-width: 800px;
-      margin: 0 auto;
-    }
-    .cards {
-      display: flex;
-      justify-content: center;
-      margin: 10px 0;
-    }
-    .card {
-      width: 80px; /* Adjust card size */
-      height: 120px; /* Adjust card size */
-      margin: 5px;
-      border: 1px solid #000;
-      background-color: white;
-    }
-    .card img {
-      width: 100%;
-      height: 100%;
-    }
-    .card-back {
-      width: 80px;
-      height: 120px;
-      margin: 5px;
-      background: url('card_back.png') no-repeat center;
-      background-size: cover;
-    }
-    #controls button, #controls input {
-      margin: 5px;
-      padding: 10px 15px;
-      font-size: 16px;
-    }
-    #results {
-      margin-top: 20px;
-    }
-  </style>
-</head>
-<body>
-  <div id="game-container">
-    <h1>Texas Hold'em Poker</h1>
-    <div id="balances">
-      <h3>Your Chips: $<span id="player-chips">1000</span></h3>
-      <h3>Dealer's Chips: $<span id="dealer-chips">1000</span></h3>
-    </div>
-    <div id="pot">Pot: $<span id="pot-amount">0</span></div>
-    <h2>Your Hand</h2>
-    <div class="cards" id="player-hand"></div>
-    <h2>Dealer's Hand</h2>
-    <div class="cards" id="dealer-hand">
-      <!-- Initially, dealer's cards are hidden -->
-      <div class="card-back"></div>
-      <div class="card-back"></div>
-    </div>
-    <h2>Community Cards</h2>
-    <div class="cards" id="community-cards"></div>
-    <h3>Dealer's Action: <span id="dealer-action">Waiting...</span></h3>
-    <h3>Current Bet: $<span id="current-bet">0</span></h3>
-    <div id="controls">
-      <button id="fold-btn">Fold</button>
-      <button id="call-btn">Call</button>
-      <button id="raise-btn">Raise</button>
-      <input type="number" id="raise-amount" placeholder="Raise amount">
-      <button id="new-game">New Game</button>
-    </div>
-    <div id="results">
-      <h3>Your Best Hand: <span id="player-best-hand"></span></h3>
-      <div class="cards" id="player-best-hand-cards"></div>
-      <h3>Dealer's Best Hand: <span id="dealer-best-hand"></span></h3>
-      <div class="cards" id="dealer-best-hand-cards"></div>
-      <h2>Winner: <span id="winner"></span></h2>
-    </div>
-  </div>
-  <script>
-    // Global variables
-    let deck = [];
-    let playerHand = [];
-    let dealerHand = [];
-    let communityCards = [];
-    let playerChips = 1000;
-    let dealerChips = 1000;
-    let pot = 0;
-    let currentBet = 0;
-    let roundStage = 0; // 0: Pre-flop, 1: Flop, 2: Turn, 3: River, 4: Showdown
-    let dealerFolded = false;
-
-    // DOM elements
-    const playerChipsSpan = document.getElementById('player-chips');
-    const dealerChipsSpan = document.getElementById('dealer-chips');
-    const potAmountSpan = document.getElementById('pot-amount');
-    const playerHandDiv = document.getElementById('player-hand');
-    const dealerHandDiv = document.getElementById('dealer-hand');
-    const communityCardsDiv = document.getElementById('community-cards');
-    const dealerActionSpan = document.getElementById('dealer-action');
-    const currentBetSpan = document.getElementById('current-bet');
-    const playerBestHandSpan = document.getElementById('player-best-hand');
-    const dealerBestHandSpan = document.getElementById('dealer-best-hand');
-    const winnerSpan = document.getElementById('winner');
-    const playerBestHandCardsDiv = document.getElementById('player-best-hand-cards');
-    const dealerBestHandCardsDiv = document.getElementById('dealer-best-hand-cards');
-
-    // Card image function (assumes images are named like "ace_of_clubs.png", "2_of_hearts.png", etc.)
-    function cardImage(card) {
-      return `<img src="${card.value}_of_${card.suit}.png" class="card" alt="${card.value} of ${card.suit}">`;
-    }
-
-    // Create and shuffle deck
-    function createDeck() {
-      deck = [];
-      const suitsArr = ['hearts', 'diamonds', 'clubs', 'spades'];
-      const valuesArr = ['2','3','4','5','6','7','8','9','10','J','Q','K','A'];
-      for (let suit of suitsArr) {
-        for (let value of valuesArr) {
-          deck.push({ value, suit });
-        }
-      }
-      deck.sort(() => Math.random() - 0.5);
-    }
-
-    // Deal initial hands and store all 5 community cards (to be revealed progressively)
-    function dealCards() {
-      createDeck();
-      playerHand = [deck.pop(), deck.pop()];
-      dealerHand = [deck.pop(), deck.pop()];
-      communityCards = [deck.pop(), deck.pop(), deck.pop(), deck.pop(), deck.pop()];
-      roundStage = 1; // start with flop
-      dealerFolded = false;
-      dealerActionSpan.textContent = "Waiting...";
-      playerBestHandSpan.textContent = "";
-      dealerBestHandSpan.textContent = "";
-      winnerSpan.textContent = "";
-      playerBestHandCardsDiv.innerHTML = "";
-      dealerBestHandCardsDiv.innerHTML = "";
-      updateDisplay();
-    }
-
-    // Update display of chips, pot, and cards
-    function updateDisplay() {
-      playerChipsSpan.textContent = playerChips;
-      dealerChipsSpan.textContent = dealerChips;
-      potAmountSpan.textContent = pot;
-      currentBetSpan.textContent = currentBet;
-
-      // Display player's hand
-      playerHandDiv.innerHTML = playerHand.map(cardImage).join('');
-      
-      // Display dealer's hand (hidden until showdown or if dealer folds)
-      if (dealerFolded) {
-        dealerHandDiv.innerHTML = `<h3>Dealer Folded</h3>`;
-      } else if (roundStage < 4) {
-        dealerHandDiv.innerHTML = `<div class="card-back"></div><div class="card-back"></div>`;
-      } else {
-        dealerHandDiv.innerHTML = dealerHand.map(cardImage).join('');
-      }
-
-      // Display community cards based on roundStage:
-      let numToShow = 0;
-      if (roundStage === 1) numToShow = 3; // Flop
-      else if (roundStage === 2) numToShow = 4; // Turn
-      else if (roundStage >= 3) numToShow = 5; // River or Showdown
-      communityCardsDiv.innerHTML = communityCards.slice(0, numToShow).map(cardImage).join('');
-    }
-
-    // Poker hand evaluation function (simplified)
-    function evaluateHand(hand) {
-      // Combine player hand and community cards
-      const allCards = [...hand, ...communityCards];
-      
-      // Sort cards by their value (simplified logic for ranking cards)
-      const valueOrder = ['2','3','4','5','6','7','8','9','10','J','Q','K','A'];
-      const sortedHand = allCards.sort((a, b) => valueOrder.indexOf(a.value) - valueOrder.indexOf(b.value));
-      return sortedHand.slice(0, 5);
-    }
-
-    // Determine the winner (simplified)
-    function determineWinner() {
-      const playerBest = evaluateHand(playerHand);
-      const dealerBest = evaluateHand(dealerHand);
-      
-      // Display the best hands
-      playerBestHandSpan.textContent = playerBest.map(card => `${card.value} of ${card.suit}`).join(', ');
-      dealerBestHandSpan.textContent = dealerBest.map(card => `${card.value} of ${card.suit}`).join(', ');
-      
-      // Display the best hand cards
-      playerBestHandCardsDiv.innerHTML = playerBest.map(cardImage).join('');
-      dealerBestHandCardsDiv.innerHTML = dealerBest.map(cardImage).join('');
-      
-      // Simplified winner logic: Higher value wins
-      const playerValue = playerBest.reduce((sum, card) => sum + valueOrder.indexOf(card.value), 0);
-      const dealerValue = dealerBest.reduce((sum, card) => sum + valueOrder.indexOf(card.value), 0);
-      
-      if (playerValue > dealerValue) {
-        winnerSpan.textContent = "Player wins!";
-        playerChips += pot;
-      } else if (playerValue < dealerValue) {
-        winnerSpan.textContent = "Dealer wins!";
-        dealerChips += pot;
-      } else {
-        winnerSpan.textContent = "It's a tie!";
-      }
-      
-      pot = 0;
-      updateDisplay();
-    }
-
-    // Handle player actions: fold, call, raise
-    function handlePlayerAction(action) {
-      if (action === 'fold') {
-        dealerFolded = true;
-        dealerActionSpan.textContent = "Dealer Wins!";
-        updateDisplay();
-        return;
-      }
-
-      // Logic for call or raise
-      if (action === 'call') {
-        playerChips -= currentBet;
-        pot += currentBet;
-      }
-
-      if (action === 'raise') {
-        const raiseAmount = parseInt(document.getElementById('raise-amount').value);
-        if (isNaN(raiseAmount) || raiseAmount <= 0) return;
-        playerChips -= raiseAmount;
-        currentBet += raiseAmount;
-        pot += raiseAmount;
-      }
-
-      // Simulate dealer action
-      dealerActionSpan.textContent = "Dealer is making a decision...";
-      setTimeout(() => {
-        // Simulate a random dealer decision
-        if (Math.random() > 0.5) {
-          dealerFolded = true;
-          dealerActionSpan.textContent = "Dealer folded!";
-        } else {
-          dealerChips -= currentBet;
-          pot += currentBet;
-          dealerActionSpan.textContent = "Dealer called.";
-        }
-        determineWinner();
-      }, 1000);
-      updateDisplay();
-    }
-
-    // Event Listeners
-    document.getElementById('fold-btn').addEventListener('click', () => handlePlayerAction('fold'));
-    document.getElementById('call-btn').addEventListener('click', () => handlePlayerAction('call'));
-    document.getElementById('raise-btn').addEventListener('click', () => handlePlayerAction('raise'));
-    document.getElementById('new-game').addEventListener('click', dealCards);
-
-    // Start a new game when page loads
-    dealCards();
-  </script>
 </body>
 </html>
