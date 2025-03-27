@@ -113,9 +113,9 @@
     const playerBestHandCardsDiv = document.getElementById('player-best-hand-cards');
     const dealerBestHandCardsDiv = document.getElementById('dealer-best-hand-cards');
 
-    // Card image function (referencing images directly)
+    // Card image function (referencing images directly with updated card names)
     function cardImage(card) {
-      return `<img src="${card.value}_of_${card.suit}.png" class="card" alt="${card.value} of ${card.suit}">`;
+      return `<img src="${card.value.toLowerCase()}_of_${card.suit.toLowerCase()}.png" class="card" alt="${card.value} of ${card.suit}">`;
     }
 
     // Create and shuffle deck
@@ -331,11 +331,14 @@
       updateDisplay();
     }
 
-    // Initialize game and events
-    document.getElementById('new-game').addEventListener('click', dealCards);
+    // Event listeners for player actions
     document.getElementById('fold-btn').addEventListener('click', () => handlePlayerAction('fold'));
     document.getElementById('call-btn').addEventListener('click', () => handlePlayerAction('call'));
     document.getElementById('raise-btn').addEventListener('click', () => handlePlayerAction('raise'));
+    document.getElementById('new-game').addEventListener('click', dealCards);
+
+    // Start the first game
+    dealCards();
   </script>
 </body>
 </html>
