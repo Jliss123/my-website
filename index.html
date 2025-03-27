@@ -180,8 +180,7 @@
       // Combine player hand and community cards
       const allCards = [...hand, ...communityCards];
       
-      // Evaluate the best hand (for simplicity, let's assume high card)
-      // Sorting by value (this is simplified, poker hand evaluation needs more work)
+      // Sort cards by their value (simplified logic for ranking cards)
       const valueOrder = ['2','3','4','5','6','7','8','9','10','J','Q','K','A'];
       const sortedHand = allCards.sort((a, b) => valueOrder.indexOf(a.value) - valueOrder.indexOf(b.value));
       return sortedHand.slice(0, 5);
@@ -215,6 +214,46 @@
       }
       
       pot = 0;
+      updateDisplay();
+    }
+
+    // Handle player actions: fold, call, raise
+    function handlePlayerAction(action) {
+      if (action === 'fold') {
+        dealerFolded = true;
+        dealerActionSpan.textContent = "Dealer Wins!";
+        updateDisplay();
+        return;
+      }
+
+      // Logic for call or raise
+      if (action === 'call') {
+        playerChips -= currentBet;
+        pot += currentBet;
+      }
+
+      if (action === 'raise') {
+        const raiseAmount = parseInt(document.getElementById('raise-amount').value);
+        if (isNaN(raiseAmount) || raiseAmount <= 0) return;
+        playerChips -= raiseAmount;
+        currentBet += raiseAmount;
+        pot += raiseAmount;
+      }
+
+      // Simulate dealer action
+      dealerActionSpan.textContent = "Dealer is making a decision...";
+      setTimeout(() => {
+        // Simulate a random dealer decision
+        if (Math.random() > 0.5) {
+          dealerFolded = true;
+          dealerActionSpan.textContent = "Dealer folded!";
+        } else {
+          dealerChips -= currentBet;
+          pot += currentBet;
+          dealerActionSpan.textContent = "Dealer called.";
+        }
+        determineWinner();
+      }, 1000);
       updateDisplay();
     }
 
