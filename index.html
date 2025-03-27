@@ -205,7 +205,7 @@
 
     // Dealer's action: can call, raise, or fold
     function dealerTurn(playerBet) {
-      if (dealerChips < playerBet || Math.random() < 0.2) {
+      if (dealerChips < playerBet || Math.random() < 0.1) {
         dealerFolded = true;
         dealerActionSpan.textContent = "Dealer folds!";
         winnerSpan.textContent = "Player wins! Dealer folded.";
@@ -215,7 +215,7 @@
         return;
       }
       let dealerBet = playerBet;
-      if (Math.random() < 0.5) {
+      if (Math.random() < 0.3) {
         let extra = Math.floor(Math.random() * 20);
         dealerBet += extra;
       }
@@ -308,6 +308,10 @@
       playerBestHandSpan.textContent = playerBest.description;
       dealerBestHandSpan.textContent = dealerBest.description;
 
+      // Display the best hand cards of both player and dealer
+      playerBestHandCardsDiv.innerHTML = [...playerHand, ...communityCards].slice(0, 5).map(cardImage).join('');
+      dealerBestHandCardsDiv.innerHTML = [...dealerHand, ...communityCards].slice(0, 5).map(cardImage).join('');
+      
       // Compare ranks first, then tiebreaker
       let winner = '';
       if (playerBest.rank > dealerBest.rank) {
